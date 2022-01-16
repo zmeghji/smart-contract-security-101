@@ -26,8 +26,19 @@ describe("Reentrancy", function () {
       expect(userBalance).to.eq(ethers.utils.parseEther("50"));
     });
 
-    it("...", async function(){
+    it("Should accept withdrawals", async function(){
+        await this.savingsAccountV2.withdraw();
+        const deployerBalance =await this.savingsAccountV2.balanceOf(deployer.address);
+        const userBalance = await this.savingsAccountV2.balanceOf(user.address);
+        expect(deployerBalance).to.eq(0);
+        expect(userBalance).to.eq(ethers.utils.parseEther("50"));
+
 
     });
+
+    it("investor attack", async function() {
+      await this.investorV2.attack({value: ethers.utils.parseEther("10")})
+      expect(await ethers.provider.getBalance(this.savingsAccountV2.address)).to.eq(0);
+    })
   });
 });
