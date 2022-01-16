@@ -39,6 +39,7 @@ module.exports = {
   networks: {
     hardhat: {
       initialBaseFeePerGas: 0, // workaround from https://github.com/sc-forks/solidity-coverage/issues/652#issuecomment-896330136 . Remove when that issue is closed.
+      blockGasLimit: 20000000
     },
     ropsten: {
       url: process.env.ROPSTEN_URL || "",
@@ -46,13 +47,13 @@ module.exports = {
     },
   },
   gasReporter: {
-    enabled: false,
+    enabled: true,
     currency: "USD",
   },
   etherscan: {
     apiKey: process.env.ETHERSCAN_API_KEY,
   },
   mocha: {
-    timeout: 20000000,
+    timeout: 200000000,
   },
 };
