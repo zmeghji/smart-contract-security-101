@@ -16,7 +16,7 @@ contract SimpleToken is Ownable {
   }
 
   function transfer(address _to, uint256 _amount) public {
-    require(balanceOf[msg.sender].sub(_amount) >= 0, "Not enough tokens");
+    require(balanceOf[msg.sender] >= _amount, "Not enough tokens");
     balanceOf[msg.sender] = balanceOf[msg.sender].sub(_amount);
     balanceOf[_to] = balanceOf[_to].add(_amount);
   }
