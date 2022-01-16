@@ -23,7 +23,33 @@ describe("SavingsAccount", function () {
       expect(await this.savingsAccount.balanceOf(user.address)).to.eq(100);
     });
 
-    it("...", async function () {
+    it("should be possible to withdraw", async function () {
+      expect(await this.savingsAccount.balanceOf(user.address)).to.eq(0);
+      await this.savingsAccount.connect(user).deposit({value: 100});
+      expect(await this.savingsAccount.balanceOf(user.address)).to.eq(100);
+      await this.savingsAccount.connect(user).withdraw();
+      expect(await this.savingsAccount.balanceOf(user.address)).to.eq(0);
+
     });
   });
+
+  describe("From a contract", function () {
+    it("Should be possible to deposit", async function () {
+      expect(await this.savingsAccount.balanceOf(this.investor.address)).to.eq(0);
+
+      await this.investor.depositIntoSavingsAccount({ value: 100 });
+
+      expect(await this.savingsAccount.balanceOf(this.investor.address)).to.eq(100);
+    });
+
+    it("should be possible to withdraw", async function () {
+      expect(await this.savingsAccount.balanceOf(this.investor.address)).to.eq(0);
+      await this.investor.depositIntoSavingsAccount({ value: 100 });
+      expect(await this.savingsAccount.balanceOf(this.investor.address)).to.eq(100);
+      await this.investor.withdrawFromSavingsAccount();
+      expect(await this.savingsAccount.balanceOf(this.investor.address)).to.eq(0);
+    });
+
+
+  })
 });
