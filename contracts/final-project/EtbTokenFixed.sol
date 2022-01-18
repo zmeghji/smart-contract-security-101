@@ -1,13 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.6.0;
+import "@openzeppelin/contracts-legacy/math/SafeMath.sol";
 
-/* 
-Vulnerabilities:
-- tx.origin 
-- lack of access controls (setDexAddress)
-- overflow (old pragma)
-*/
-contract ETBToken {
+
+contract ETBTokenFixed {
+  using SafeMath for uint256;
+  
   address public owner;
   address public etbDex;
   uint256 public totalSupply;
@@ -29,24 +27,21 @@ contract ETBToken {
     _;
   }
 
-  //tx.origin used
   modifier onlyOwner() {
-    require(tx.origin == owner, "Restricted Acces");
+    require(msg.sender == owner, "Restricted Acces");
     _;
   }
 
-  //Vulnerability: accessible by anyone
-  function setDexAddress(address _dex) external {
+  function setDexAddress(address _dex) external onlyOwner{
     etbDex = _dex;
   }
 
   function transfer(address recipient, uint256 amount) external {
     require(recipient != address(0), "ERC20: transfer from the zero address");
-    //vulnerability: underflow issue
-    require(balances[msg.sender] - amount >= 0, "Not enough balance");
+    require(balances[msg.sender] >= amount, "Not enough balance");
 
-    balances[msg.sender] -= amount;
-    balances[recipient] += amount;
+    balances[msg.sender] = balances[msg.sender].sub(amount);
+    balances[recipient] = balances[recipient].add(amount);
   }
 
   function approve(address spender, uint256 amount) external {
@@ -60,29 +55,25 @@ contract ETBToken {
     address recipient,
     uint256 amount
   ) external returns (bool) {
-    //vulnerability: underflow issue
-    require(allowances[sender][msg.sender] - amount >= 0, "ERC20: amount exceeds allowance");
-    require(balances[sender] - amount >= 0, "Not enough balance");
-    //vulnerability: anyone allowed to transfer user's balance
+    require(allowances[sender][msg.sender]  >= amount, "ERC20: amount exceeds allowance");
+    require(balances[sender]  >= amount, "Not enough balance");
 
-    allowances[sender][msg.sender] -= amount;
+    allowances[sender][msg.sender] = allowances[sender][msg.sender].sub(amount);
 
-    balances[sender] -= amount;
-    balances[recipient] += amount;
+    balances[sender] = balances[sender].sub(amount);
+    balances[recipient] = balances[recipient].add(amount);
 
     return true;
   }
 
   function mint(uint256 amount) external onlyEtbDex {
-    //vulnerability: not using safemath
-    totalSupply += amount;
-    balances[owner] += amount;
+    totalSupply = totalSupply.add(amount);
+    balances[owner] = balances[owner].add(amount);
   }
 
   function burn(address account, uint256 amount) external onlyEtbDex {
-    //vulnerability: not using safemath
-    totalSupply -= amount;
-    balances[account] -= amount;
+    totalSupply = totalSupply.sub(amount);
+    balances[account] = balances[account].sub(amount);
   }
 
   /* --- Getters --- */
